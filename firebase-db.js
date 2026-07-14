@@ -56,7 +56,10 @@ export async function verificarPassword(nombre, carrera, claveTexto) {
   const ref  = doc(db, 'estudiantes', studentId(nombre, carrera));
   const snap = await getDoc(ref);
   if (!snap.exists() || !snap.data().passwordHash) return { existe: false };
-  const hash = await sha256(claveTexto);
+  // El hash guardado incluye el nombre (ver _checkPassword en INDEX_FINAL.html:
+  // _sha256(nombre + ':' + contraseña)) — antes esta función solo hasheaba la
+  // contraseña sola, por eso NUNCA coincidía y el login siempre decía "incorrecta".
+  const hash = await sha256(nombre.toLowerCase().trim() + ':' + claveTexto);
   return { existe: true, correcta: hash === snap.data().passwordHash };
 }
 
@@ -157,6 +160,31 @@ export function escucharAsistencias(nombre, carrera, callback) {
     snap.docs.forEach(d => { obj[d.id] = d.data(); });
     callback(obj);
   });
+}
+
+// ============================================================
+// CARGA ÚNICA (para el botón manual "Refrescar" — no reemplaza al listener
+// en tiempo real, es un getDoc/getDocs de una sola vez).
+// ============================================================
+
+export async function cargarEstudianteUnaVez(nombre, carrera) {
+  const id = studentId(nombre, carrera);
+  const [perfilSnap, notasSnap, eventosSnap, asistSnap] = await Promise.all([
+    getDoc(doc(db, 'estudiantes', id)),
+    getDocs(collection(db, 'estudiantes', id, 'notas')),
+    getDocs(collection(db, 'estudiantes', id, 'eventos')),
+    getDocs(collection(db, 'estudiantes', id, 'asistencias'))
+  ]);
+
+  const asistencias = {};
+  asistSnap.docs.forEach(d => { asistencias[d.id] = d.data(); });
+
+  return {
+    perfil: perfilSnap.exists() ? perfilSnap.data() : null,
+    notas: notasSnap.docs.map(d => d.data()),
+    eventos: eventosSnap.docs.map(d => d.data()),
+    asistencias
+  };
 }
 
 // ============================================================
