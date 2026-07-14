@@ -153,6 +153,25 @@ export async function guardarAsistencia(nombre, carrera, fecha, registro) {
   await setDoc(ref, registro);
 }
 
+// guardarAsistencias (PLURAL) — sube TODO el mapa de asistencias de una vez,
+// mismo patrón atómico que guardarNotas/guardarEventos (writeBatch: borra lo
+// que ya no está, escribe lo que sí). Esta es la que debe llamar syncToSheets;
+// sin ella, marcarAsistencia() solo guardaba en memoria local y nunca subía
+// nada a Firestore — por eso la asistencia "no se registraba".
+export async function guardarAsistencias(nombre, carrera, asistenciasObj) {
+  const id   = studentId(nombre, carrera);
+  const col  = collection(db, 'estudiantes', id, 'asistencias');
+  const prev = await getDocs(col);
+  const fechasNuevas = new Set(Object.keys(asistenciasObj || {}));
+
+  const batch = writeBatch(db);
+  prev.docs.forEach(d => { if (!fechasNuevas.has(d.id)) batch.delete(d.ref); });
+  Object.entries(asistenciasObj || {}).forEach(([fecha, registro]) => {
+    batch.set(doc(col, fecha), registro);
+  });
+  await batch.commit();
+}
+
 export function escucharAsistencias(nombre, carrera, callback) {
   const col = collection(db, 'estudiantes', studentId(nombre, carrera), 'asistencias');
   return onSnapshot(col, (snap) => {
