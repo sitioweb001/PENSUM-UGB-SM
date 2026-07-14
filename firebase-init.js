@@ -1,13 +1,8 @@
-// ============================================================
-// firebase-init.js
-// Inicializa Firebase (Firestore + Auth anónima) para UGB Pénsum.
-// Reemplaza toda la lógica de "config.appsScriptUrl" de INDEX_FINAL.html.
-// ============================================================
-
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js';
 import {
-  getFirestore,
-  enableIndexedDbPersistence
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager
 } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
 import {
   getAuth,
@@ -15,7 +10,6 @@ import {
   onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
 
-// Credenciales del proyecto ugb-pensum (Firebase Console → Configuración del proyecto).
 const firebaseConfig = {
   apiKey: "AIzaSyCum-d6Z-kpxo5Kkrn3c_gY9orr_wSrEH8",
   authDomain: "ugb-pensum.firebaseapp.com",
@@ -26,22 +20,18 @@ const firebaseConfig = {
 };
 
 export const app  = initializeApp(firebaseConfig);
-export const db   = getFirestore(app);
 export const auth = getAuth(app);
 
-// Cache local + cola de escrituras offline (Firestore lo maneja solo,
-// esto es lo que reemplaza tu "syncing..." manual).
-enableIndexedDbPersistence(db).catch((err) => {
-  if (err.code === 'failed-precondition') {
-    console.warn('[Firebase] Persistencia offline solo puede activarse en una pestaña a la vez.');
-  } else if (err.code === 'unimplemented') {
-    console.warn('[Firebase] Este navegador no soporta persistencia offline de Firestore.');
-  }
+// ignoreUndefinedProperties: true — SIN esto, Firestore RECHAZA cualquier
+// campo con valor `undefined` (el campo "nota" de un evento nuevo del
+// calendario empieza como undefined hasta que el estudiante lo llena).
+// Esto era justo la causa de "Error al guardar — reintentando..." SOLO en
+// el calendario: notas/ciclos/etc. nunca tenían un campo undefined.
+export const db = initializeFirestore(app, {
+  ignoreUndefinedProperties: true,
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
 });
 
-// Autenticación anónima automática al cargar la página.
-// (Cada dispositivo/navegador obtiene su propio usuario anónimo; el estudiante
-// se identifica igual que antes por nombre+contraseña, no por este UID.)
 let _authReadyResolve;
 export const authReady = new Promise((res) => { _authReadyResolve = res; });
 
