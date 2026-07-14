@@ -115,12 +115,31 @@ header{background:var(--hdr);color:#fff;padding:12px 20px;display:flex;align-ite
 .ham-wrap{position:relative;}
 .ham-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;width:40px;height:40px;border-radius:8px;cursor:pointer;font-size:19px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
 .ham-btn:hover{background:rgba(255,255,255,.28);}
-.ham-menu{position:absolute;top:46px;right:0;background:var(--modal-bg);border:1px solid var(--gl);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.25);min-width:230px;z-index:500;display:none;max-height:calc(100vh - 70px);overflow-y:auto;}
-.ham-menu.open{display:block;}
-.ham-item{padding:10px 16px;display:flex;align-items:center;gap:9px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);transition:background .15s;}
-.ham-item:hover{background:var(--bg);}
-.ham-item.danger:hover{background:#fee2e2;color:#991b1b;}
-.ham-divider{height:1px;background:var(--gl);}
+
+/* ── SIDE MENU (drawer, estilo horarios.html) ── */
+.side-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:900;display:none;backdrop-filter:blur(2px);}
+.side-overlay.on{display:block;}
+.ham-menu{position:fixed;top:0;left:0;width:290px;max-width:86vw;height:100%;background:var(--modal-bg);
+  z-index:1000;transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;box-shadow:4px 0 28px rgba(0,0,0,.22);}
+.ham-menu.open{display:flex;transform:translateX(0);}
+.side-head{background:var(--hdr);padding:20px 16px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.side-head-info{display:flex;align-items:center;gap:10px;}
+.side-head-info img{height:34px;width:auto;filter:brightness(0) invert(1);}
+.side-head-info .side-head-txt div:first-child{color:#fff;font-weight:800;font-size:13px;line-height:1.2;}
+.side-head-info .side-head-txt div:last-child{color:rgba(255,255,255,.65);font-size:10px;margin-top:2px;}
+.side-close{color:#fff;font-size:20px;cursor:pointer;line-height:1;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;flex-shrink:0;}
+.side-close:hover{background:rgba(255,255,255,.15);}
+.side-body{flex:1;overflow-y:auto;padding:8px 0 14px;}
+.side-label{padding:14px 16px 6px;font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--gm);text-transform:uppercase;}
+.ham-item{padding:11px 16px;display:flex;align-items:center;gap:11px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);border-left:3px solid transparent;transition:background .15s,border-color .15s;}
+.ham-item .ham-ico{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+.ham-item:hover{background:var(--bg);border-left-color:var(--blue);}
+.ham-item.danger:hover{background:#fee2e2;color:#991b1b;border-left-color:#dc2626;}
+.ham-divider{height:1px;background:var(--gl);margin:8px 0;}
+.side-foot{padding:12px 16px;border-top:1px solid var(--gl);font-size:10px;color:var(--gm);text-align:center;flex-shrink:0;}
+.side-foot b{color:var(--blue);}
+@media(max-width:480px){.ham-menu{width:270px;}}
 
 /* VIEWS */
 .view{display:none;}.view.active{display:block;}
@@ -431,38 +450,64 @@ header{background:var(--hdr);color:#fff;padding:12px 20px;display:flex;align-ite
     <span style="font-size:12px;font-weight:600;opacity:.9;color:#fff;" id="currentStudentName"></span>
     <div class="ham-wrap">
       <button class="ham-btn" onclick="toggleHam()" title="Menú">☰</button>
-      <div class="ham-menu" id="hamMenu">
-        <div class="ham-item" onclick="openPasteModal();closeHam()">📋 Pegar notas del portal</div>
-        <div class="ham-item" onclick="openCalendarModal();closeHam()">📅 Calendario</div>
-        <div class="ham-item" onclick="openAsistencia();closeHam()">🏛 Asistencia diaria</div>
-        <div class="ham-item" onclick="openHistPensum();closeHam()">📜 Historial de cambios</div>
-        <div class="ham-divider"></div>
-        <div class="ham-item" onclick="fetchFromSheets();closeHam()" style="font-weight:700;color:#1d4ed8;">🔄 Refrescar desde Firebase</div>
-        <div class="ham-item" onclick="syncToSheets();closeHam()">☁️ Subir a Firebase</div>
-        <div class="ham-divider"></div>
-        <div class="ham-item" onclick="exportCSV();closeHam()">📊 Exportar CSV</div>
-        <div class="ham-item" onclick="importCSV();closeHam()">📁 Importar CSV</div>
-        <div class="ham-item" onclick="exportJSON();closeHam()">💾 Exportar JSON</div>
-        <div class="ham-item" onclick="importJSON();closeHam()">📂 Importar JSON</div>
-        <div class="ham-item" onclick="exportPDF();closeHam()">🖨️ Imprimir / PDF</div>
-        <div class="ham-divider"></div>
-        <div class="ham-item" onclick="abrirModoAvanzado();closeHam()">⚙️ Verificar base de datos</div>
-        <div class="ham-item" onclick="toggleTheme();closeHam()">🌙 Cambiar tema</div>
-        <div class="ham-divider"></div>
-        <div class="ham-item" onclick="openChangePass()" style="color:#1d4ed8;font-weight:700;">🔑 Cambiar contraseña</div>
-        <div class="ham-item" onclick="openDeleteDataModal()" style="color:#dc2626;font-weight:700;">🗑️ Borrar datos</div>
-        <div class="ham-item" onclick="toggleAccountListVisibility()" style="color:#991b1b;font-weight:700;">👁️ Mostrar/ocultar lista de cuentas</div>
-        <div class="ham-item" onclick="limpiarCache();closeHam()" style="color:#7c3aed;font-weight:700;">🧹 Limpiar caché y recargar</div>
-        <div class="ham-divider"></div>
-        <div class="ham-item" onclick="openAdvanced();closeHam()" style="color:#7c3aed;font-weight:800;">🚀 ADVANCED</div>
-        <div class="ham-divider"></div>
-        <div class="ham-item" onclick="changeStudent();backToCareerSelect();closeHam()" style="color:var(--blue);font-weight:700;">🎓 Cambiar carrera</div>
-        <div class="ham-item danger" onclick="changeStudent();closeHam()">🚪 Cambiar estudiante</div>
-        <div class="ham-item danger" onclick="cerrarSesion();closeHam()" style="font-weight:800;">🔒 Cerrar sesión</div>
-      </div>
     </div>
   </div>
 </header>
+
+<div class="side-overlay" id="sideOverlay" onclick="closeHam()"></div>
+<div class="ham-menu" id="hamMenu">
+  <div class="side-head">
+    <div class="side-head-info">
+      <img src="Logotipo-horizontal-azul.png" alt="UGB" onerror="this.style.display='none'">
+      <div class="side-head-txt">
+        <div>UGB Pénsum</div>
+        <div id="sideCareerSub">Ciclo II 2026</div>
+      </div>
+    </div>
+    <div class="side-close" onclick="closeHam()">✕</div>
+  </div>
+  <div class="side-body">
+    <div class="side-label">Datos y calendario</div>
+    <div class="ham-item" onclick="openPasteModal();closeHam()"><span class="ham-ico">📋</span> Pegar notas del portal</div>
+    <div class="ham-item" onclick="openCalendarModal();closeHam()"><span class="ham-ico">📅</span> Calendario</div>
+    <div class="ham-item" onclick="openAsistencia();closeHam()"><span class="ham-ico">🏛</span> Asistencia diaria</div>
+    <div class="ham-item" onclick="openHistPensum();closeHam()"><span class="ham-ico">📜</span> Historial de cambios</div>
+
+    <div class="ham-divider"></div>
+    <div class="side-label">Sincronización</div>
+    <div class="ham-item" onclick="fetchFromSheets();closeHam()" style="font-weight:700;color:#1d4ed8;"><span class="ham-ico">🔄</span> Refrescar desde Firebase</div>
+    <div class="ham-item" onclick="syncToSheets();closeHam()"><span class="ham-ico">☁️</span> Subir a Firebase</div>
+
+    <div class="ham-divider"></div>
+    <div class="side-label">Exportar / Importar</div>
+    <div class="ham-item" onclick="exportCSV();closeHam()"><span class="ham-ico">📊</span> Exportar CSV</div>
+    <div class="ham-item" onclick="importCSV();closeHam()"><span class="ham-ico">📁</span> Importar CSV</div>
+    <div class="ham-item" onclick="exportJSON();closeHam()"><span class="ham-ico">💾</span> Exportar JSON</div>
+    <div class="ham-item" onclick="importJSON();closeHam()"><span class="ham-ico">📂</span> Importar JSON</div>
+    <div class="ham-item" onclick="exportPDF();closeHam()"><span class="ham-ico">🖨️</span> Imprimir / PDF</div>
+
+    <div class="ham-divider"></div>
+    <div class="side-label">Preferencias</div>
+    <div class="ham-item" onclick="abrirModoAvanzado();closeHam()"><span class="ham-ico">⚙️</span> Verificar base de datos</div>
+    <div class="ham-item" onclick="toggleTheme();closeHam()"><span class="ham-ico">🌙</span> Cambiar tema</div>
+
+    <div class="ham-divider"></div>
+    <div class="side-label">Cuenta</div>
+    <div class="ham-item" onclick="openChangePass()" style="color:#1d4ed8;font-weight:700;"><span class="ham-ico">🔑</span> Cambiar contraseña</div>
+    <div class="ham-item" onclick="openDeleteDataModal()" style="color:#dc2626;font-weight:700;"><span class="ham-ico">🗑️</span> Borrar datos</div>
+    <div class="ham-item" onclick="toggleAccountListVisibility()" style="color:#991b1b;font-weight:700;"><span class="ham-ico">👁️</span> Mostrar/ocultar lista de cuentas</div>
+    <div class="ham-item" onclick="limpiarCache();closeHam()" style="color:#7c3aed;font-weight:700;"><span class="ham-ico">🧹</span> Limpiar caché y recargar</div>
+
+    <div class="ham-divider"></div>
+    <div class="ham-item" onclick="openAdvanced();closeHam()" style="color:#7c3aed;font-weight:800;"><span class="ham-ico">🚀</span> ADVANCED</div>
+
+    <div class="ham-divider"></div>
+    <div class="ham-item" onclick="changeStudent();backToCareerSelect();closeHam()" style="color:var(--blue);font-weight:700;"><span class="ham-ico">🎓</span> Cambiar carrera</div>
+    <div class="ham-item danger" onclick="changeStudent();closeHam()"><span class="ham-ico">🚪</span> Cambiar estudiante</div>
+    <div class="ham-item danger" onclick="cerrarSesion();closeHam()" style="font-weight:800;"><span class="ham-ico">🔒</span> Cerrar sesión</div>
+  </div>
+  <div class="side-foot">Universidad Gerardo Barrios<br><b>UGB Pénsum</b></div>
+</div>
 
 <div class="stats-bar">
   <div class="stat-item"><div class="stat-dot" style="background:var(--pass)"></div><span class="stat-label">Aprobadas:</span><span class="stat-val" id="statPass">0</span></div>
@@ -1100,6 +1145,8 @@ async function chooseCareer(career) {
   const h2 = document.getElementById('careerHeaderLine2');
   if (h1) h1.textContent = CAREERS[career].headerL1;
   if (h2) h2.textContent = CAREERS[career].headerL2;
+  const sideSub = document.getElementById('sideCareerSub');
+  if (sideSub) sideSub.textContent = CAREERS[career].label || 'Ciclo II 2026';
 
   appData = {};
 
@@ -1922,9 +1969,14 @@ function toggleTheme(){
   document.getElementById('htmlRoot').setAttribute('data-theme',n);
   localStorage.setItem('ugb_theme',n);
 }
-function toggleHam(){document.getElementById('hamMenu').classList.toggle('open');}
-function closeHam(){document.getElementById('hamMenu').classList.remove('open');}
-document.addEventListener('click',e=>{const w=document.querySelector('.ham-wrap');if(w&&!w.contains(e.target))closeHam();});
+function toggleHam(){
+  document.getElementById('hamMenu').classList.toggle('open');
+  document.getElementById('sideOverlay').classList.toggle('on');
+}
+function closeHam(){
+  document.getElementById('hamMenu').classList.remove('open');
+  document.getElementById('sideOverlay').classList.remove('on');
+}
 
 // ═══════════════════════════════════════════════════════════
 // GRADE CALC
@@ -2761,7 +2813,8 @@ async function syncToSheets(isAuto=false){
       window.FirebaseDB.guardarNotas(currentStudent, currentCareer, notasArray),
       window.FirebaseDB.guardarEventos(currentStudent, currentCareer, sd.events||[]),
       window.FirebaseDB.guardarCiclosDone(currentStudent, currentCareer, sd.cyclesDone||{}),
-      window.FirebaseDB.guardarEspeciales(currentStudent, currentCareer, sd.specialCards||{})
+      window.FirebaseDB.guardarEspeciales(currentStudent, currentCareer, sd.specialCards||{}),
+      window.FirebaseDB.guardarAsistencias(currentStudent, currentCareer, sd.asistencias||{})
     ]);
     const t=new Date().toLocaleTimeString();
     document.getElementById('syncStatus').textContent='sync '+t;
@@ -2922,7 +2975,10 @@ document.addEventListener('keydown',e=>{
   // Ctrl+Z = deshacer, Ctrl+Y o Ctrl+Shift+Z = rehacer
   if(e.ctrlKey && !e.shiftKey && e.key==='z'){ e.preventDefault(); undoPensum(); return; }
   if(e.ctrlKey && (e.key==='y' || (e.shiftKey && e.key==='Z'))){ e.preventDefault(); redoPensum(); return; }
-  if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open,.ham-menu.open').forEach(el=>el.classList.remove('open'));
+  if(e.key==='Escape'){
+    document.querySelectorAll('.modal-overlay.open,.ham-menu.open').forEach(el=>el.classList.remove('open'));
+    closeHam();
+  }
   // Navegación con Ctrl+Arrow en inputs de notas
   if(e.ctrlKey&&e.key.startsWith('Arrow')){
     const active=document.activeElement;
